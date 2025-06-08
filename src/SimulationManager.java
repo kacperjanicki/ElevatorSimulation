@@ -17,13 +17,13 @@ public class SimulationManager {
             f.passengers = populatePassengersOnFloor();
             f.updatePassengers();
         }
-        elevatorController.wagonik.shouldStop = false;
+        elevatorController.wagonik.setShouldStop(false);
         elevatorController.start();
     }
     // debug - delete later
     public void stopSimulation(){
         simulationRunning=false;
-        elevatorController.wagonik.shouldStop = true;
+        elevatorController.wagonik.setShouldStop(true);
     }
 
     static public ArrayList<Passenger> populatePassengersOnFloor(){

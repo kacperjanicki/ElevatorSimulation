@@ -1,0 +1,5 @@
+- max 5 w kabinie
+- leftPanel, pasazerowie sa w kabinie i wybieram pietro dla nich
+- rightPanel
+- - strzalki to kierunek jazdy, niech sie podswietlaja
+- - przy kazdym pietrze gdzie sa pasazerowie

@@ -10,7 +10,6 @@ class Floor extends JPanel {
     protected ArrayList<Passenger> passengers = new ArrayList<>();
     protected PassengerPanel passengerPanel;
 
-
     static final int labelWidth = 20;
     static final int passengerWidth = 100;
     static final int floorPanelWidth = 200;

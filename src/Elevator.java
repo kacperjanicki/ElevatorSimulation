@@ -7,7 +7,9 @@ import java.util.Arrays;
 
 enum Direction {
     UP(-1),
-    DOWN(1);
+    DOWN(1),
+    IDLE(0);
+
     private final int value;
     Direction(int value) {
         this.value = value;
@@ -26,10 +28,12 @@ public class Elevator extends JPanel {
     public ArrayList<Floor> floors = new ArrayList<>();
 
     public Wagonik wagonik;
+    protected Controller controller;
 
-    public Elevator(){
+    public Elevator(Controller controller){
         this.setLayout(null);
         this.setPreferredSize(new Dimension(400, 800));
+        this.controller = controller;
 
         int y = 0;
         int floorHeight = 70;
@@ -43,7 +47,7 @@ public class Elevator extends JPanel {
             floor.floorPanel.setVisible(false);
 
         }
-        wagonik = new Wagonik(floors);
+        wagonik = new Wagonik(floors,controller);
         this.add(wagonik);
         this.setComponentZOrder(wagonik,0);
     }
@@ -60,19 +64,19 @@ public class Elevator extends JPanel {
 
     }
 }
-
-
 class Wagonik extends JPanel{
     protected boolean shouldStop;
     protected ArrayList<Floor> floors;
     private int currentFloor;
-    private Direction direction;
+    static protected Direction direction;
+    protected Controller elevController;
 
-    public Wagonik(ArrayList<Floor> floors){
+    public Wagonik(ArrayList<Floor> floors,Controller elevController){
         this.shouldStop = false;
         this.floors = floors;
+        this.elevController = elevController;
         this.currentFloor = 0;
-        this.direction = Direction.UP;
+        direction = Direction.UP;
 
         int labelWidth = 20;
         int panelWidth = 200;
@@ -97,6 +101,13 @@ class Wagonik extends JPanel{
         return currentFloor;
     }
 
+    public void setShouldStop(boolean value) {
+        if (this.shouldStop != value) {
+            this.shouldStop = value;
+            elevController.updateDirectionIndicator();
+        }
+    }
+
 
     public void move(){
         // w ActionListenerze(lambdzie) nie mozna zmieniac wartosci inta,
@@ -106,6 +117,7 @@ class Wagonik extends JPanel{
         Timer timer = new Timer(10, null);
         timer.setInitialDelay(0);
         timer.addActionListener(e -> {
+            elevController.updateDirectionIndicator();
             Point p = this.getLocation();
             int newFloor = getCurrentFloor(p.y);
 
@@ -113,16 +125,20 @@ class Wagonik extends JPanel{
                 ((Timer) e.getSource()).stop();
                 return;
             }
-
 //          z kazdym kolejnym pietrem zatrzymujemy winde na 1s, debugging
             if(newFloor != previousFloor[0]){
                 previousFloor[0] = newFloor;
                 timer.stop();
+                setShouldStop(true);
+                direction = Direction.IDLE;
+
                 new Timer(1000, evt -> {
                     timer.start();
                 }) {{
                     setRepeats(false);
                     start();
+                    setShouldStop(false);
+                    direction=Direction.UP;
                 }};
                 return;
             }

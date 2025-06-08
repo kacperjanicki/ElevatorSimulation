@@ -13,12 +13,12 @@ public class myFrame extends JFrame {
     private Controller controller;
     private ElevButtons elevButtons;
     public myFrame(){
-        super("Elevator simulator");
+        super("Elevator simulation");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new BorderLayout());
 
-        elevator = new Elevator();
         controller = new Controller();
+        elevator = new Elevator(controller);
         elevButtons = new ElevButtons();
         manager = new SimulationManager(elevator);
 
@@ -42,12 +42,16 @@ public class myFrame extends JFrame {
         JButton start = new JButton("START");
         start.addActionListener(e -> {
             manager.startSimulation();
-            start.setEnabled(false);
+//            start.setEnabled(false);
         });
 
         // for debugging
         JButton stop = new JButton("stop");
-        stop.addActionListener(e -> manager.stopSimulation());
+        stop.addActionListener(e -> {
+            manager.stopSimulation();
+            Wagonik.direction = Direction.IDLE;
+            controller.updateDirectionIndicator();
+        });
 
         mainPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));
         startPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1),new EmptyBorder(20, 10, 10, 10)));

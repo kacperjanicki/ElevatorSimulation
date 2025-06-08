@@ -40,7 +40,7 @@ public class Elevator extends JPanel {
             floors.add(floor);
             y += floorHeight;
 //          setvisible true jesli chcemy odkryc jak wygladaja ukryte floor
-//            floor.floorPanel.setVisible(true);
+            floor.floorPanel.setVisible(false);
 
         }
         wagonik = new Wagonik(floors);

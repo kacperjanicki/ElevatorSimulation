@@ -1,21 +1,24 @@
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.util.ArrayList;
 
 class Floor extends JPanel {
     protected int floorNum;
     protected JPanel floorPanel;
-    protected JPanel passengerPanel;
     protected JLabel floorLabel;
+    protected ArrayList<Passenger> passengers = new ArrayList<>();
+    protected PassengerPanel passengerPanel;
+
+
+    static final int labelWidth = 20;
+    static final int passengerWidth = 100;
+    static final int floorPanelWidth = 200;
 
     public Floor(int floorNumber) {
         this.floorNum = floorNumber;
         this.setLayout(null);
         this.setPreferredSize(new Dimension(300, 70));
-
-        int labelWidth = 20;  // Zwiększyłem szerokość etykiety dla lepszej widoczności
-        int passengerWidth = 100;  // Zwiększyłem szerokość panelu pasażera
-        int floorPanelWidth = 200;
 
         floorLabel = new JLabel(Integer.toString(floorNum));
         floorLabel.setBounds(0, 0, labelWidth, 70);
@@ -30,15 +33,21 @@ class Floor extends JPanel {
         floorPanel.setBorder(new LineBorder(Color.BLACK));
         floorPanel.setOpaque(true);
 
-        passengerPanel = new JPanel();
+        passengerPanel = new PassengerPanel();
         passengerPanel.setBounds(labelWidth + floorPanelWidth, 0, passengerWidth, 70);
-        passengerPanel.setBackground(Color.RED);
-        passengerPanel.setBorder(new LineBorder(Color.BLACK));
-        passengerPanel.setOpaque(true);
 
         this.add(floorLabel);
         this.add(floorPanel);
         this.add(passengerPanel);
+    }
+
+    public void updatePassengers() {
+        passengerPanel.removeAll();
+        for(Passenger p : passengers) {
+            passengerPanel.addIcon(p);
+        }
+        passengerPanel.revalidate();
+        passengerPanel.repaint();
     }
 
     @Override
@@ -50,4 +59,25 @@ class Floor extends JPanel {
     public String toString() {
         return "Pietro: " + floorNum;
     }
+}
+
+class PassengerPanel extends JPanel{
+
+    public PassengerPanel(){
+        this.setLayout(new FlowLayout(FlowLayout.LEFT,5,5));
+        this.setBackground(Color.RED);
+        this.setBorder(new LineBorder(Color.BLACK));
+        this.setOpaque(true);
+    }
+
+    public void addIcon(Passenger p){
+            JLabel passengerIcon = new JLabel("|");
+            this.add(passengerIcon);
+            passengerIcon.setFont(new Font("Arial", Font.BOLD, 24));
+    }
+
+}
+
+class Passenger{
+
 }

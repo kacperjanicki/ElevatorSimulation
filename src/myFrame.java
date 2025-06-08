@@ -13,9 +13,7 @@ public class myFrame extends JFrame {
     private Controller controller;
     private ElevButtons elevButtons;
     public myFrame(){
-
         super("Elevator simulator");
-
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new BorderLayout());
 
@@ -42,7 +40,10 @@ public class myFrame extends JFrame {
         JPanel startPanel = new JPanel();
         startPanel.setPreferredSize(new Dimension(800,100));
         JButton start = new JButton("START");
-        start.addActionListener(e -> manager.startSimulation());
+        start.addActionListener(e -> {
+            manager.startSimulation();
+            start.setEnabled(false);
+        });
 
         // for debugging
         JButton stop = new JButton("stop");

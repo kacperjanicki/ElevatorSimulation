@@ -10,7 +10,13 @@ public class SimulationManager {
 
     public void startSimulation(){
         simulationRunning=true;
+        elevatorController.wagonik.shouldStop = false;
         elevatorController.start();
+    }
+    // debug - delete later
+    public void stopSimulation(){
+        simulationRunning=false;
+        elevatorController.wagonik.shouldStop = true;
     }
 
 }

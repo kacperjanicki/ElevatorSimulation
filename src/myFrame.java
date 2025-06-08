@@ -12,13 +12,12 @@ public class myFrame extends JFrame {
     private Elevator elevator;
     private Controller controller;
     private ElevButtons elevButtons;
-    protected final int floorCount=10;
-
     public myFrame(){
+
         super("Elevator simulator");
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setLayout(new BorderLayout(0,20));
+        this.setLayout(new BorderLayout());
 
         elevator = new Elevator();
         controller = new Controller();
@@ -33,31 +32,27 @@ public class myFrame extends JFrame {
         rightPanel.setPreferredSize(new Dimension(200,900));
         rightPanel.setLayout(new BoxLayout(rightPanel,BoxLayout.Y_AXIS));
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setPreferredSize(new Dimension(800,900));
-        mainPanel.setLayout(new BorderLayout(100,0));
+        JPanel mainPanel = new JPanel(new BorderLayout(10,0));
+        mainPanel.setPreferredSize(new Dimension(900,800));
 
-        JPanel elevatorPanel = new JPanel();
-        elevatorPanel.setPreferredSize(new Dimension(400,900));
-        elevatorPanel.setLayout(new GridLayout(1,2));
-        elevatorPanel.add(elevator);
+        JPanel elevatorPanel = new JPanel(new BorderLayout());
+        elevatorPanel.setPreferredSize(new Dimension(450,800));
+        elevatorPanel.add(elevator,BorderLayout.CENTER);
 
         JPanel startPanel = new JPanel();
         startPanel.setPreferredSize(new Dimension(800,100));
         JButton start = new JButton("START");
-        start.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                manager.startSimulation();
-                start.setEnabled(false);
-            }
-        });
+        start.addActionListener(e -> manager.startSimulation());
 
+        // for debugging
+        JButton stop = new JButton("stop");
+        stop.addActionListener(e -> manager.stopSimulation());
 
         mainPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));
         startPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1),new EmptyBorder(20, 10, 10, 10)));
 
         startPanel.add(start);
+        startPanel.add(stop);
         leftPanel.add(elevButtons);
         rightPanel.add(controller);
 
@@ -69,7 +64,8 @@ public class myFrame extends JFrame {
         this.add(startPanel,BorderLayout.SOUTH);
         this.getRootPane().setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        this.setSize(800,1000);
+        this.pack();
+        this.setSize(950,1000);
         this.setVisible(true);
         this.setResizable(false);
     }

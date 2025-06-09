@@ -3,32 +3,30 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 public class myFrame extends JFrame {
     private SimulationManager manager;
     private Elevator elevator;
-    private Controller controller;
+    private Summoner summoner;
     private ElevButtons elevButtons;
+    protected JPanel rightPanel;
+
     public myFrame(){
         super("Elevator simulation");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLayout(new BorderLayout());
 
-        controller = new Controller();
-        elevator = new Elevator(controller);
-        elevButtons = new ElevButtons();
-        manager = new SimulationManager(elevator);
-
         JPanel leftPanel = new JPanel();
         leftPanel.setPreferredSize(new Dimension(200,900));
         leftPanel.setLayout(new BoxLayout(leftPanel,BoxLayout.Y_AXIS));
 
-        JPanel rightPanel = new JPanel();
+        rightPanel = new JPanel();
         rightPanel.setPreferredSize(new Dimension(200,900));
-        rightPanel.setLayout(new BoxLayout(rightPanel,BoxLayout.Y_AXIS));
+        rightPanel.setLayout(null);
+
+        elevator = new Elevator(rightPanel);
+        elevButtons = new ElevButtons();
+        manager = new SimulationManager(elevator);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10,0));
         mainPanel.setPreferredSize(new Dimension(900,800));
@@ -42,7 +40,9 @@ public class myFrame extends JFrame {
         JButton start = new JButton("START");
         start.addActionListener(e -> {
             manager.startSimulation();
-//            start.setEnabled(false);
+            for(Summoner s: elevator.floorSummoners){
+                s.updateDirectionIndicator();
+            }
         });
 
         // for debugging
@@ -50,7 +50,9 @@ public class myFrame extends JFrame {
         stop.addActionListener(e -> {
             manager.stopSimulation();
             Wagonik.direction = Direction.IDLE;
-            controller.updateDirectionIndicator();
+            for(Summoner s: elevator.floorSummoners){
+                s.updateDirectionIndicator();
+            }
         });
 
         mainPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));
@@ -59,7 +61,6 @@ public class myFrame extends JFrame {
         startPanel.add(start);
         startPanel.add(stop);
         leftPanel.add(elevButtons);
-        rightPanel.add(controller);
 
         mainPanel.add(leftPanel,BorderLayout.WEST);
         mainPanel.add(rightPanel,BorderLayout.EAST);
@@ -73,6 +74,8 @@ public class myFrame extends JFrame {
         this.setSize(950,1000);
         this.setVisible(true);
         this.setResizable(false);
+//      debug - wyswietlaj na drugim monitorze
+        this.setLocation(-1000,500);
     }
 
 }

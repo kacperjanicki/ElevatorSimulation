@@ -4,20 +4,22 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 
-public class Controller extends JPanel {
+public class Summoner extends JPanel {
     private JButton up;
     private JButton down;
-    private JPanel container;
+    protected Floor floor;
+    protected JPanel summonerPanel;
 
-    public Controller(){
-        this.setPreferredSize(new Dimension(200,900));
-        this.setLayout(new BorderLayout());
-        this.setBorder(new LineBorder(Color.black,1));
+    public Summoner(Floor floor){
+        this.floor = floor;
+        this.setLayout(null);
+//        this.setBorder(new LineBorder(Color.black,1));
 
-        container = new JPanel();
-        container.setPreferredSize(new Dimension(150,100));
-        container.setLayout(new GridLayout(2,1,10,10));
-        container.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));
+        summonerPanel = new JPanel();
+//        summonerPanel.setBackground(Color.BLUE);
+        summonerPanel.setBounds(0,0,150,70);
+        summonerPanel.setLayout(new GridLayout(2,1,10,10));
+        summonerPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));
 
         JPanel row1 = new JPanel();
         row1.setLayout(new GridLayout(1,2,20,0));
@@ -33,14 +35,13 @@ public class Controller extends JPanel {
         row2.setLayout(new BorderLayout());
         JButton summon = new JButton();
         row2.add(summon,BorderLayout.CENTER);
+//        JLabel num = new JLabel("Pietro: "+floor.floorNum);
+//        row2.add(num,BorderLayout.EAST);
 
-        container.add(row1);
-        container.add(row2);
+        summonerPanel.add(row1);
+        summonerPanel.add(row2);
 
-        JPanel centeringPanel = new JPanel(new GridBagLayout());
-        centeringPanel.add(container);
-
-        this.add(centeringPanel,BorderLayout.SOUTH);
+        this.add(summonerPanel);
     }
 
     public void updateDirectionIndicator(){
@@ -53,8 +54,8 @@ public class Controller extends JPanel {
                 down.setBackground(UIManager.getColor("Button.background"));
             }
         }
-        container.revalidate();
-        container.repaint();
+        summonerPanel.revalidate();
+        summonerPanel.repaint();
     }
 
     @Override

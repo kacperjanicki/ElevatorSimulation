@@ -8,6 +8,7 @@ class Floor extends JPanel {
     protected JPanel floorPanel;
     protected JLabel floorLabel;
     protected ArrayList<Passenger> passengers = new ArrayList<>();
+    protected Summoner summoner;
     protected PassengerPanel passengerPanel;
 
     static final int labelWidth = 20;
@@ -57,6 +58,10 @@ class Floor extends JPanel {
     @Override
     public String toString() {
         return "Pietro: " + floorNum;
+    }
+
+    boolean hasAwaitingPassengers(){
+        return !passengers.isEmpty();
     }
 }
 

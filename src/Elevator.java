@@ -1,7 +1,6 @@
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -24,17 +23,14 @@ enum Direction {
 
 public class Elevator extends JPanel {
     public static final int floorCount=10;
-
     public ArrayList<Floor> floors = new ArrayList<>();
+    public ArrayList<Summoner> floorSummoners = new ArrayList<>();
 
     public Wagonik wagonik;
-    protected Controller controller;
 
-    public Elevator(Controller controller){
+    public Elevator(JPanel rightPanel){
         this.setLayout(null);
         this.setPreferredSize(new Dimension(400, 800));
-        this.controller = controller;
-
         int y = 0;
         int floorHeight = 70;
         for (int i = floorCount; i >= 0; i--) {
@@ -42,12 +38,22 @@ public class Elevator extends JPanel {
             floor.setBounds(100, y, 400, floorHeight);
             this.add(floor);
             floors.add(floor);
+
+            Summoner floorSummoner = new Summoner(floor);
+            floorSummoner.setBounds(25, y, 150, 75);
+//          Summoner dodajemy dla każdego piętra, jest on defaultowo niewidoczny, dopiero w SimulationManager
+//          zdecydujemy żeby pokazać tylko te na których są pasażerowie
+//          Summoner na piętrze bez pasażerów na początku i tak się przyda, bo na to piętro mogą w przyszłości wysiaść inni
+            floorSummoner.setVisible(false);
+            rightPanel.add(floorSummoner);
+            floorSummoners.add(floorSummoner);
+            floor.summoner = floorSummoner;
+
             y += floorHeight;
 //          setvisible true jesli chcemy odkryc jak wygladaja ukryte floor
             floor.floorPanel.setVisible(false);
-
         }
-        wagonik = new Wagonik(floors,controller);
+        wagonik = new Wagonik(floors,floorSummoners);
         this.add(wagonik);
         this.setComponentZOrder(wagonik,0);
     }
@@ -55,26 +61,25 @@ public class Elevator extends JPanel {
     public void start() {
         System.out.println("Elevator moving");
         wagonik.move();
-
     }
 
     @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
-
     }
 }
 class Wagonik extends JPanel{
     protected boolean shouldStop;
     protected ArrayList<Floor> floors;
+    protected ArrayList<Summoner> summoners;
     private int currentFloor;
     static protected Direction direction;
-    protected Controller elevController;
 
-    public Wagonik(ArrayList<Floor> floors,Controller elevController){
+
+    public Wagonik(ArrayList<Floor> floors, ArrayList<Summoner> summoners){
         this.shouldStop = false;
         this.floors = floors;
-        this.elevController = elevController;
+        this.summoners = summoners;
         this.currentFloor = 0;
         direction = Direction.UP;
 
@@ -104,7 +109,9 @@ class Wagonik extends JPanel{
     public void setShouldStop(boolean value) {
         if (this.shouldStop != value) {
             this.shouldStop = value;
-            elevController.updateDirectionIndicator();
+            for(Summoner s: summoners){
+                s.updateDirectionIndicator();
+            }
         }
     }
 
@@ -117,7 +124,9 @@ class Wagonik extends JPanel{
         Timer timer = new Timer(10, null);
         timer.setInitialDelay(0);
         timer.addActionListener(e -> {
-            elevController.updateDirectionIndicator();
+            for(Summoner s: summoners){
+                s.updateDirectionIndicator();
+            }
             Point p = this.getLocation();
             int newFloor = getCurrentFloor(p.y);
 

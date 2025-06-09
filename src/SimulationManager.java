@@ -1,12 +1,14 @@
+import java.awt.*;
 import java.util.ArrayList;
 
 public class SimulationManager {
     private Elevator elevatorController;
+//    private Summoner summoner;
     static protected boolean simulationRunning = false;
 
     public SimulationManager(Elevator elevator){
         this.elevatorController = elevator;
-
+//        this.summoner = summoner;
     }
 
     public void startSimulation(){
@@ -14,8 +16,11 @@ public class SimulationManager {
         ArrayList<Floor> floors = elevatorController.floors;
 
         for(Floor f: floors){
+//          Pokazujemy pasażerów jako ikony
             f.passengers = populatePassengersOnFloor();
             f.updatePassengers();
+//          Pokazujemy Summonera, jeżeli piętro ma oczekujących pasażerów
+            if(f.hasAwaitingPassengers()) f.summoner.setVisible(true);
         }
         elevatorController.wagonik.setShouldStop(false);
         elevatorController.start();

@@ -40,9 +40,7 @@ public class myFrame extends JFrame {
         JButton start = new JButton("START");
         start.addActionListener(e -> {
             manager.startSimulation();
-            for(Summoner s: elevator.floorSummoners){
-                s.updateDirectionIndicator();
-            }
+            elevator.floorSummoners.forEach(Summoner::updateDirectionIndicator);
         });
 
         // for debugging
@@ -50,9 +48,7 @@ public class myFrame extends JFrame {
         stop.addActionListener(e -> {
             manager.stopSimulation();
             Wagonik.direction = Direction.IDLE;
-            for(Summoner s: elevator.floorSummoners){
-                s.updateDirectionIndicator();
-            }
+            elevator.floorSummoners.forEach(Summoner::updateDirectionIndicator);
         });
 
         mainPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));

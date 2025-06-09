@@ -2,7 +2,7 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 
 enum Direction {
     UP(-1),
@@ -72,7 +72,7 @@ class Wagonik extends JPanel{
     protected boolean shouldStop;
     protected ArrayList<Floor> floors;
     protected ArrayList<Summoner> summoners;
-    private int currentFloor;
+    protected Floor currentFloor;
     static protected Direction direction;
 
 
@@ -80,14 +80,13 @@ class Wagonik extends JPanel{
         this.shouldStop = false;
         this.floors = floors;
         this.summoners = summoners;
-        this.currentFloor = 0;
-        direction = Direction.UP;
-
+        this.currentFloor = floors.get(floors.size()-1);
+        setDirection(Direction.UP);
         int labelWidth = 20;
         int panelWidth = 200;
+        this.setLayout(new FlowLayout(FlowLayout.RIGHT,5,5));
         this.setBounds(100+labelWidth, floors.get(floors.size()-1).getY(), panelWidth, 70);
         this.setBorder(new LineBorder(Color.BLACK, 1));
-        this.setOpaque(false);
     }
 
     @Override
@@ -97,22 +96,38 @@ class Wagonik extends JPanel{
         g.fillRect(0,0,getWidth(),getHeight());
     }
 
-    public int getCurrentFloor(int currentY){
-        for(Floor f: floors){
-            if(f.getLocation().y == currentY){
-                return f.floorNum;
-            }
-        }
-        return currentFloor;
+    public Floor getCurrentFloor(int currentY){
+        return floors.stream()
+                .filter(f -> f.getLocation().getY() == currentY)
+                .findFirst()
+                .orElse(currentFloor);
     }
 
     public void setShouldStop(boolean value) {
         if (this.shouldStop != value) {
             this.shouldStop = value;
-            for(Summoner s: summoners){
-                s.updateDirectionIndicator();
-            }
+            summoners.forEach(Summoner::updateDirectionIndicator);
         }
+    }
+
+    protected void setDirection(Direction dir){
+        direction = dir;
+    }
+
+    protected void enterPassengers(){
+        Iterator<Passenger> it = currentFloor.passengers.iterator();
+        Timer timer = new Timer(500,null);
+        timer.addActionListener(evt -> {
+            if (it.hasNext()) {
+                Passenger pas = it.next();
+                this.add(pas.icon);
+                it.remove();
+                currentFloor.updatePassengers();
+            } else {
+                ((Timer) evt.getSource()).stop();
+            }
+        });
+        timer.start();
     }
 
 
@@ -124,41 +139,46 @@ class Wagonik extends JPanel{
         Timer timer = new Timer(10, null);
         timer.setInitialDelay(0);
         timer.addActionListener(e -> {
-            for(Summoner s: summoners){
-                s.updateDirectionIndicator();
-            }
+            summoners.forEach(Summoner::updateDirectionIndicator);
             Point p = this.getLocation();
-            int newFloor = getCurrentFloor(p.y);
+            Floor newFloor = getCurrentFloor(p.y);
+            this.currentFloor = newFloor;
 
             if(shouldStop){
                 ((Timer) e.getSource()).stop();
                 return;
             }
 //          z kazdym kolejnym pietrem zatrzymujemy winde na 1s, debugging
-            if(newFloor != previousFloor[0]){
-                previousFloor[0] = newFloor;
+            if(newFloor.floorNum != previousFloor[0]){
+                previousFloor[0] = newFloor.floorNum;
                 timer.stop();
+//              pasazerowie wsiadaja
+//                System.out.println("pietro: "+currentFloor.floorNum + "y: "+this.getLocation().y);
+                System.out.println(currentFloor.passengers);
+                if(currentFloor.hasAwaitingPassengers()){
+                    this.enterPassengers();
+                }
                 setShouldStop(true);
-                direction = Direction.IDLE;
+                setDirection(Direction.IDLE);
+                this.currentFloor = getCurrentFloor(p.y);
 
-                new Timer(1000, evt -> {
+
+                new Timer(3000, evt -> {
                     timer.start();
                 }) {{
                     setRepeats(false);
                     start();
                     setShouldStop(false);
-                    direction=Direction.UP;
+                    setDirection(Direction.UP);
                 }};
                 return;
             }
-
-            if (p.y > 0) {
+//            System.out.println("pietro: "+currentFloor.floorNum + "y: "+this.getLocation().y);
+            if (p.y >= 0) {
+                if(currentFloor.floorNum == 10) setDirection(Direction.DOWN);
                 this.currentFloor = getCurrentFloor(p.y);
-//                System.out.println("current floor: "+currentFloor);
                 this.setLocation(p.x, p.y + direction.getValue());
                 this.repaint();
-            } else {
-                ((Timer) e.getSource()).stop();
             }
         });
         timer.start();

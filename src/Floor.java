@@ -43,9 +43,7 @@ class Floor extends JPanel {
 
     public void updatePassengers() {
         passengerPanel.removeAll();
-        for(Passenger p : passengers) {
-            passengerPanel.addIcon(p);
-        }
+        passengers.forEach(p -> passengerPanel.addIcon(p));
         passengerPanel.revalidate();
         passengerPanel.repaint();
     }
@@ -71,17 +69,18 @@ class PassengerPanel extends JPanel{
         this.setLayout(new FlowLayout(FlowLayout.LEFT,5,5));
         this.setBackground(Color.RED);
         this.setBorder(new LineBorder(Color.BLACK));
-        this.setOpaque(true);
     }
 
     public void addIcon(Passenger p){
-            JLabel passengerIcon = new JLabel("|");
-            this.add(passengerIcon);
-            passengerIcon.setFont(new Font("Arial", Font.BOLD, 24));
+            this.add(p.icon);
     }
 
 }
 
 class Passenger{
-
+    protected JLabel icon;
+    public Passenger(){
+        icon = new JLabel("|");
+        icon.setFont(new Font("Arial", Font.BOLD, 24));
+    }
 }

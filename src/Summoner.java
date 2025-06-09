@@ -13,10 +13,8 @@ public class Summoner extends JPanel {
     public Summoner(Floor floor){
         this.floor = floor;
         this.setLayout(null);
-//        this.setBorder(new LineBorder(Color.black,1));
 
         summonerPanel = new JPanel();
-//        summonerPanel.setBackground(Color.BLUE);
         summonerPanel.setBounds(0,0,150,70);
         summonerPanel.setLayout(new GridLayout(2,1,10,10));
         summonerPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));
@@ -46,8 +44,14 @@ public class Summoner extends JPanel {
 
     public void updateDirectionIndicator(){
         switch (Wagonik.direction) {
-            case Direction.UP -> up.setBackground(Color.GREEN);
-            case Direction.DOWN -> down.setBackground(Color.RED);
+            case Direction.UP -> {
+                down.setBackground(UIManager.getColor("Button.background"));
+                up.setBackground(Color.GREEN);
+            }
+            case Direction.DOWN -> {
+                up.setBackground(UIManager.getColor("Button.background"));
+                down.setBackground(Color.RED);
+            }
             case Direction.IDLE -> {
                 // defaultowy background JButton
                 up.setBackground(UIManager.getColor("Button.background"));
@@ -61,6 +65,5 @@ public class Summoner extends JPanel {
     @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
-//        g.drawRect(0,0,100,100);
     }
 }

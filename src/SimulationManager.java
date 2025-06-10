@@ -17,7 +17,8 @@ public class SimulationManager {
 
         for(Floor f: floors){
 //          Pokazujemy pasażerów jako ikony
-            f.passengers = populatePassengersOnFloor();
+            f.passengers = populatePassengersOnFloor(f);
+
             f.updatePassengers();
 //          Pokazujemy Summonera, jeżeli piętro ma oczekujących pasażerów
             if(f.hasAwaitingPassengers()) f.summoner.setVisible(true);
@@ -34,11 +35,11 @@ public class SimulationManager {
         elevatorController.wagonik.updateButtonsState();
     }
 
-    static public ArrayList<Passenger> populatePassengersOnFloor(){
+    static public ArrayList<Passenger> populatePassengersOnFloor(Floor currentFloor){
         int amount = (int)(Math.random() * 6);
         ArrayList<Passenger> result = new ArrayList<>();
         for(int i=0; i<amount; i++){
-            result.add(new Passenger());
+            result.add(new Passenger(currentFloor));
         }
         return result;
     };

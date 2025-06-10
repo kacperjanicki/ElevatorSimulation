@@ -1,8 +1,8 @@
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 
 class Wagonik extends JPanel {
     protected boolean shouldStop;
@@ -10,10 +10,15 @@ class Wagonik extends JPanel {
     protected ArrayList<Summoner> summoners;
     protected ArrayList<Passenger> currentPassengers;
     protected Floor currentFloor;
-    protected Direction direction;
+    static protected Direction direction;
+    private final int elevCapacity = 5;
+    Timer timer;
+    int[] previousFloor = {-1};
+    private long waitUntil = -1;
 
+    TreeSet<Floor> taskSet = new TreeSet<>(Comparator.comparingInt(f -> f.floorNum));
     public ElevButtons buttons;
-
+    private Integer targetY;
 
     public Wagonik(ArrayList<Floor> floors, ArrayList<Summoner> summoners,ElevButtons buttons){
         this.shouldStop = false;
@@ -22,12 +27,73 @@ class Wagonik extends JPanel {
         this.summoners = summoners;
         this.currentFloor = floors.get(floors.size()-1);
         this.currentPassengers = new ArrayList<>();
+
         setDirection(Direction.IDLE);
+
         int labelWidth = 20;
         int panelWidth = 200;
         this.setLayout(new FlowLayout(FlowLayout.RIGHT,5,5));
         this.setBounds(100+labelWidth, floors.get(floors.size()-1).getY(), panelWidth, 70);
         this.setBorder(new LineBorder(Color.BLACK, 1));
+
+        // w konstruktorze bo
+        timer= new Timer(10,e -> {
+            if (waitUntil > 0) {
+                if (System.currentTimeMillis() < waitUntil) {
+                    return;
+                } else {
+                    waitUntil = -1;
+                    setShouldStop(false);
+
+                    Floor next = getNextTask();
+                    if (next != null) {
+                        Direction newDir = next.floorNum > currentFloor.floorNum ? Direction.UP : Direction.DOWN;
+                        setDirection(newDir);
+                    } else {
+                        setDirection(Direction.IDLE);
+                        updateButtonsState();
+                        return;
+                    }
+                }
+            }
+            summoners.forEach(Summoner::updateDirectionIndicator);
+
+            Point p = this.getLocation();
+            Floor newFloor = getCurrentFloor(p.y);
+            this.currentFloor = newFloor;
+
+//            System.out.println("current floor: "+currentFloor.floorNum+" passCount "+currentFloor.passengers.size());
+            if(newFloor.floorNum != previousFloor[0] && currentFloor == getNextTask()) stop();
+
+            if(shouldStop){
+                setDirection(Direction.IDLE);
+                return;
+            }
+//            System.out.println("pietro: "+currentFloor.floorNum + "y: "+this.getLocation().y);
+            if(!SimulationManager.simulationRunning) return;
+
+            if (p.y >= 0) {
+                int step = direction.getValue();
+                int nextY = p.y + step;
+
+                // Sprawdzamy, czy następna pozycja Y to piętro
+                Optional<Floor> floorAtNextY = floors.stream()
+                        .filter(f -> f.getY() == nextY)
+                        .findFirst();
+
+                this.setLocation(p.x, nextY);
+                this.repaint();
+
+                // Jeżeli piętro istnieje, aktualizujemy currentFloor
+                floorAtNextY.ifPresent(f -> this.currentFloor = f);
+
+                // Jeżeli to piętro jest kolejnym zadaniem, zatrzymujemy windę
+                if (floorAtNextY.isPresent() && floorAtNextY.get() == getNextTask()) {
+                    stop();
+                }
+            }
+
+        });
     }
 
     @Override
@@ -52,22 +118,38 @@ class Wagonik extends JPanel {
     }
 
     protected void setDirection(Direction dir){
-        this.direction = dir;
+        direction = dir;
         updateButtonsState();
     }
 
     protected void enterPassengers(){
-        Iterator<Passenger> it = currentFloor.passengers.iterator();
+        final Floor aktualneFloor = this.currentFloor;
+        System.out.println("curr "+aktualneFloor.floorNum);
+
+
+        Iterator<Passenger> it = aktualneFloor.passengers.iterator();
         Timer timer = new Timer(500,null);
         timer.addActionListener(evt -> {
-            if (it.hasNext()) {
+            if (it.hasNext() && currentPassengers.size() < elevCapacity) {
                 Passenger pas = it.next();
+                pas.passengerPanel.remove(pas.icon);
+                pas.passengerPanel.revalidate();
+                pas.passengerPanel.repaint();
+
                 this.add(pas.icon);
                 currentPassengers.add(pas);
-                System.out.println("current passengers: "+currentPassengers.size());
                 it.remove();
-                currentFloor.updatePassengers();
-            } else {
+
+                pas.addRemoveListener(this);
+
+                this.revalidate();
+                this.repaint();
+            }else if(currentPassengers.size() == elevCapacity){
+//                System.out.println("capacity reached");
+                return;
+            }
+
+            else {
                 ((Timer) evt.getSource()).stop();
             }
         });
@@ -80,60 +162,59 @@ class Wagonik extends JPanel {
         buttons.setActive(shouldBeActive);
     }
 
+
+    protected void goTo(Floor floor){
+        if (!taskSet.contains(floor)) {
+            taskSet.add(floor);
+        }
+        targetY = floor.getLocation().y;
+        // jesli winda stoi to ruszmay ja
+        if (direction == Direction.IDLE) {
+            Floor next = getNextTask();
+            if (next != null) {
+                Direction newDir = next.floorNum > currentFloor.floorNum ? Direction.UP : Direction.DOWN;
+                setDirection(newDir);
+                move();
+            }
+        }
+
+    }
+
+    private Floor getNextTask() {
+        if (taskSet.isEmpty()) return null;
+
+        return taskSet.stream()
+                .min(Comparator.comparingInt(f -> Math.abs(f.floorNum - currentFloor.floorNum)))
+                .orElse(null);
+    }
+
+
+    protected void stop(){
+        previousFloor[0] = currentFloor.floorNum;
+        timer.stop();
+        System.out.println("current passengers: "+currentPassengers.size());
+        if(currentFloor.hasAwaitingPassengers()){
+            this.enterPassengers();
+        }
+//      log.addMessage("Elevator capacity reached. Maximum passengers at the time is 5")
+
+        taskSet.remove(currentFloor);
+
+        setShouldStop(false);
+        setDirection(Direction.IDLE);
+        updateButtonsState();
+
+        waitUntil = System.currentTimeMillis() + 3000;
+        if(!timer.isRunning()) timer.start(); // wznawiamy glowny timer;
+
+      }
+
     public void move(){
+        System.out.println(taskSet);
         // w ActionListenerze(lambdzie) nie mozna zmieniac wartosci inta,
         // wiec dajemy int[]
-        int[] previousFloor = {-1};
-
-        Timer timer = new Timer(10, null);
-        timer.setInitialDelay(0);
-        timer.addActionListener(e -> {
-            summoners.forEach(Summoner::updateDirectionIndicator);
-            Point p = this.getLocation();
-            Floor newFloor = getCurrentFloor(p.y);
-            this.currentFloor = newFloor;
-
-            if(shouldStop){
-                setDirection(Direction.IDLE);
-                ((Timer) e.getSource()).stop();
-                return;
-            }
-//          z kazdym kolejnym pietrem zatrzymujemy winde na 1s, debugging
-            if(newFloor.floorNum != previousFloor[0]){
-                setDirection(Direction.IDLE);
-                previousFloor[0] = newFloor.floorNum;
-                timer.stop();
-//              pasazerowie wsiadaja
-//                System.out.println("pietro: "+currentFloor.floorNum + "y: "+this.getLocation().y);
-//                System.out.println(currentFloor.passengers);
-                if(currentFloor.hasAwaitingPassengers()){
-                    this.enterPassengers();
-                }
-                this.currentFloor = getCurrentFloor(p.y);
-
-                new Timer(3000, evt -> {
-                    // po 3s winda rusza do gory
-                    setShouldStop(false);
-                    setDirection(Direction.UP);
-                    timer.start();
-                }) {{
-                    // przez 3s stoi w miejscu, buttons po lewo active
-                    setRepeats(false);
-                    start();
-                    setDirection(Direction.IDLE);
-                    summoners.forEach(s -> s.updateDirectionIndicator());
-                    updateButtonsState();
-                }};
-                return;
-            }
-//            System.out.println("pietro: "+currentFloor.floorNum + "y: "+this.getLocation().y);
-            if (p.y >= 0 && SimulationManager.simulationRunning) {
-                if(currentFloor.floorNum == 10) setDirection(Direction.DOWN);
-                this.currentFloor = getCurrentFloor(p.y);
-                this.setLocation(p.x, p.y + direction.getValue());
-                this.repaint();
-            }
-        });
-        timer.start();
+        if(!timer.isRunning()){
+            timer.start();
+        }
     }
 }

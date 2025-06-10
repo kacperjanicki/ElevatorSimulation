@@ -19,8 +19,6 @@ enum Direction {
     }
 }
 
-
-
 public class Elevator extends JPanel {
     public static final int floorCount=10;
     public ArrayList<Floor> floors = new ArrayList<>();
@@ -45,13 +43,14 @@ public class Elevator extends JPanel {
 //          zdecydujemy żeby pokazać tylko te na których są pasażerowie
 //          Summoner na piętrze bez pasażerów na początku i tak się przyda, bo na to piętro mogą w przyszłości wysiaść inni
             floorSummoner.setVisible(false);
+
             rightPanel.add(floorSummoner);
             floorSummoners.add(floorSummoner);
             floor.summoner = floorSummoner;
 
             y += floorHeight;
 //          setvisible true jesli chcemy odkryc jak wygladaja ukryte floor
-            floor.floorPanel.setVisible(false);
+            floor.floorPanel.setVisible(true);
         }
         this.wagonik = new Wagonik(floors,floorSummoners,buttons);
         this.add(wagonik);

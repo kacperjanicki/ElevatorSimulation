@@ -1,9 +1,13 @@
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
-class Floor extends JPanel {
+class Floor extends JPanel{
     protected int floorNum;
     protected JPanel floorPanel;
     protected JLabel floorLabel;
@@ -43,7 +47,8 @@ class Floor extends JPanel {
 
     public void updatePassengers() {
         passengerPanel.removeAll();
-        passengers.forEach(p -> passengerPanel.addIcon(p));
+        passengers.forEach(p->passengerPanel.add(p.icon));
+//        System.out.println(Arrays.toString(passengerPanel.getComponents()));
         passengerPanel.revalidate();
         passengerPanel.repaint();
     }
@@ -58,9 +63,12 @@ class Floor extends JPanel {
         return "Pietro: " + floorNum;
     }
 
+
     boolean hasAwaitingPassengers(){
         return !passengers.isEmpty();
     }
+
+
 }
 
 class PassengerPanel extends JPanel{
@@ -69,17 +77,42 @@ class PassengerPanel extends JPanel{
         this.setBackground(Color.RED);
         this.setBorder(new LineBorder(Color.BLACK));
     }
-
-    public void addIcon(Passenger p){
-            this.add(p.icon);
-    }
-
 }
 
 class Passenger{
     protected JLabel icon;
-    public Passenger(){
+    private Floor currentFloor;
+    protected PassengerPanel passengerPanel;
+
+    public Passenger(Floor floor){
+        this.currentFloor = floor;
+        this.passengerPanel = floor.passengerPanel;
         icon = new JLabel("|");
         icon.setFont(new Font("Arial", Font.BOLD, 24));
+        icon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+    }
+
+    void addRemoveListener(Wagonik container){
+        icon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if(SimulationManager.simulationRunning && Wagonik.direction == Direction.IDLE){
+                    System.out.println(container.getParent());
+                    removeOnClick(container);
+                }
+            }
+        });
+    }
+
+    void removeOnClick(Wagonik wagon){
+        wagon.remove(icon);
+        wagon.revalidate();
+        wagon.repaint();
+        currentFloor.passengers.remove(this);
+
+//        if (!currentFloor.hasAwaitingPassengers()) {
+//            currentFloor.summoner.setVisible(false);
+//        }
     }
 }

@@ -3,6 +3,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class Summoner extends JPanel {
     private JButton up;
@@ -34,9 +36,14 @@ public class Summoner extends JPanel {
         JPanel row2 = new JPanel();
         row2.setLayout(new BorderLayout());
         JButton summon = new JButton();
+        summon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                elev.wagonik.goTo(floor);
+                System.out.println(elev.wagonik.taskSet);
+            }
+        });
         row2.add(summon,BorderLayout.CENTER);
-//        JLabel num = new JLabel("Pietro: "+floor.floorNum);
-//        row2.add(num,BorderLayout.EAST);
 
         summonerPanel.add(row1);
         summonerPanel.add(row2);

@@ -24,11 +24,14 @@ public class SimulationManager {
         }
         elevatorController.wagonik.setShouldStop(false);
         elevatorController.start();
+        elevatorController.wagonik.updateButtonsState();
     }
     // debug - delete later
     public void stopSimulation(){
         simulationRunning=false;
         elevatorController.wagonik.setShouldStop(true);
+        elevatorController.wagonik.setDirection(Direction.IDLE);
+        elevatorController.wagonik.updateButtonsState();
     }
 
     static public ArrayList<Passenger> populatePassengersOnFloor(){

@@ -3,3 +3,8 @@
 - rightPanel
 - - strzalki to kierunek jazdy, niech sie podswietlaja
 - - przy kazdym pietrze gdzie sa pasazerowie
+
+- queue - label "log" wyswietla aktualnie wykonana operacje
+
+- wyjscie z windy kliknieciem
+- po wyjsciu nie wraca do kolejki (remove)

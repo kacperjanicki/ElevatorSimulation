@@ -64,7 +64,6 @@ class Floor extends JPanel {
 }
 
 class PassengerPanel extends JPanel{
-
     public PassengerPanel(){
         this.setLayout(new FlowLayout(FlowLayout.LEFT,5,5));
         this.setBackground(Color.RED);

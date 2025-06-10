@@ -5,13 +5,15 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 
 public class ElevButtons extends JPanel {
-
+    protected boolean active;
+    private JPanel container;
     public ElevButtons(){
         this.setBorder(new LineBorder(Color.BLACK, 1));
         this.setLayout(new BorderLayout());
         this.setPreferredSize(new Dimension(300, 900));
+        this.active = false;
 
-        JPanel container = new JPanel();
+        container = new JPanel();
         container.setLayout(new GridLayout(4,3,10,40));
 
         for(int i=10; i>=0; i--){
@@ -23,7 +25,17 @@ public class ElevButtons extends JPanel {
         centeringPanel.add(container);
 
         this.add(centeringPanel, BorderLayout.CENTER);
+    }
 
+    public void setActive(boolean value){
+        this.active = value;
+        for(Component comp : container.getComponents()){
+            if (!(comp instanceof JButton)) continue;
+            JButton but = (JButton) comp;
+            but.setEnabled(active && SimulationManager.simulationRunning);
+        }
+        container.revalidate();
+        container.repaint();
     }
 
 

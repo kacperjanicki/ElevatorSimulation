@@ -8,10 +8,12 @@ public class Summoner extends JPanel {
     private JButton up;
     private JButton down;
     protected Floor floor;
+    protected Elevator elev;
     protected JPanel summonerPanel;
 
-    public Summoner(Floor floor){
+    public Summoner(Floor floor,Elevator elev){
         this.floor = floor;
+        this.elev = elev;
         this.setLayout(null);
 
         summonerPanel = new JPanel();
@@ -43,7 +45,7 @@ public class Summoner extends JPanel {
     }
 
     public void updateDirectionIndicator(){
-        switch (Wagonik.direction) {
+        switch (elev.wagonik.direction) {
             case Direction.UP -> {
                 down.setBackground(UIManager.getColor("Button.background"));
                 up.setBackground(Color.GREEN);

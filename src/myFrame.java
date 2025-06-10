@@ -24,8 +24,8 @@ public class myFrame extends JFrame {
         rightPanel.setPreferredSize(new Dimension(200,900));
         rightPanel.setLayout(null);
 
-        elevator = new Elevator(rightPanel);
         elevButtons = new ElevButtons();
+        elevator = new Elevator(rightPanel,elevButtons);
         manager = new SimulationManager(elevator);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10,0));
@@ -47,7 +47,7 @@ public class myFrame extends JFrame {
         JButton stop = new JButton("stop");
         stop.addActionListener(e -> {
             manager.stopSimulation();
-            Wagonik.direction = Direction.IDLE;
+            elevator.wagonik.direction = Direction.IDLE;
             elevator.floorSummoners.forEach(Summoner::updateDirectionIndicator);
         });
 
@@ -71,7 +71,7 @@ public class myFrame extends JFrame {
         this.setVisible(true);
         this.setResizable(false);
 //      debug - wyswietlaj na drugim monitorze
-        this.setLocation(-1000,500);
+        this.setLocation(-1000,200);
     }
 
 }

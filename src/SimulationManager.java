@@ -3,6 +3,7 @@ import java.util.ArrayList;
 
 public class SimulationManager {
     private Elevator elevatorController;
+    static ElevButtons elevatorButtons;
 //    private Summoner summoner;
     static protected boolean simulationRunning = false;
 

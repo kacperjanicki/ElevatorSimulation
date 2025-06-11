@@ -40,7 +40,6 @@ public class Summoner extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 elev.wagonik.goTo(floor);
-                System.out.println(elev.wagonik.taskSet);
             }
         });
         row2.add(summon,BorderLayout.CENTER);

@@ -48,7 +48,6 @@ class Floor extends JPanel{
     public void updatePassengers() {
         passengerPanel.removeAll();
         passengers.forEach(p->passengerPanel.add(p.icon));
-//        System.out.println(Arrays.toString(passengerPanel.getComponents()));
         passengerPanel.revalidate();
         passengerPanel.repaint();
     }
@@ -74,18 +73,16 @@ class Floor extends JPanel{
 class PassengerPanel extends JPanel{
     public PassengerPanel(){
         this.setLayout(new FlowLayout(FlowLayout.LEFT,5,5));
-        this.setBackground(Color.RED);
+        this.setBackground(Color.orange);
         this.setBorder(new LineBorder(Color.BLACK));
     }
 }
 
 class Passenger{
     protected JLabel icon;
-    private Floor currentFloor;
     protected PassengerPanel passengerPanel;
 
     public Passenger(Floor floor){
-        this.currentFloor = floor;
         this.passengerPanel = floor.passengerPanel;
         icon = new JLabel("|");
         icon.setFont(new Font("Arial", Font.BOLD, 24));
@@ -98,8 +95,8 @@ class Passenger{
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(SimulationManager.simulationRunning && Wagonik.direction == Direction.IDLE){
-                    System.out.println(container.getParent());
                     removeOnClick(container);
+
                 }
             }
         });
@@ -109,10 +106,6 @@ class Passenger{
         wagon.remove(icon);
         wagon.revalidate();
         wagon.repaint();
-        currentFloor.passengers.remove(this);
-
-//        if (!currentFloor.hasAwaitingPassengers()) {
-//            currentFloor.summoner.setVisible(false);
-//        }
+        SimulationManager.elevatorButtons.setLogMessage(this+"<br>left the elevator");
     }
 }

@@ -1,8 +1,6 @@
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 enum Direction {
     UP(-1),
@@ -25,10 +23,13 @@ public class Elevator extends JPanel {
     public ArrayList<Summoner> floorSummoners = new ArrayList<>();
 
     protected Wagonik wagonik;
+    protected ElevButtons buttons;
 
     public Elevator(JPanel rightPanel,ElevButtons buttons){
         this.setLayout(null);
+        this.buttons = buttons;
         this.setPreferredSize(new Dimension(400, 800));
+
         int y = 0;
         int floorHeight = 70;
         for (int i = floorCount; i >= 0; i--) {
@@ -50,15 +51,17 @@ public class Elevator extends JPanel {
 
             y += floorHeight;
 //          setvisible true jesli chcemy odkryc jak wygladaja ukryte floor
-            floor.floorPanel.setVisible(true);
+            floor.floorPanel.setVisible(false);
         }
         this.wagonik = new Wagonik(floors,floorSummoners,buttons);
+        SimulationManager.elevatorButtons = buttons;
+        buttons.wagonik = this.wagonik;
+        buttons.initializeButtons();
         this.add(wagonik);
         this.setComponentZOrder(wagonik,0);
     }
 
     public void start() {
-        System.out.println("Elevator moving");
         wagonik.move();
     }
 

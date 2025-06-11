@@ -1,12 +1,16 @@
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 
 public class ElevButtons extends JPanel {
     protected boolean active;
     private JPanel container;
+    protected Wagonik wagonik;
+
+    private String logMessage;
+    private JLabel logLabel;
+    private JPanel logPanel;
+
     public ElevButtons(){
         this.setBorder(new LineBorder(Color.BLACK, 1));
         this.setLayout(new BorderLayout());
@@ -16,15 +20,44 @@ public class ElevButtons extends JPanel {
         container = new JPanel();
         container.setLayout(new GridLayout(4,3,10,40));
 
-        for(int i=10; i>=0; i--){
-            JButton button = new JButton(Integer.toString(i));
-            container.add(button);
-        }
-
         JPanel centeringPanel = new JPanel(new GridBagLayout());
         centeringPanel.add(container);
 
+        logPanel = new JPanel(new BorderLayout());
+        logPanel.setPreferredSize(new Dimension(300,150));
+
+        logLabel = new JLabel("Welcome to Elevator Simulation");
+        logLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        logPanel.add(logLabel,BorderLayout.CENTER);
+
         this.add(centeringPanel, BorderLayout.CENTER);
+        this.add(logPanel, BorderLayout.NORTH);
+
+    }
+
+    public void setLogMessage(String msg){
+        this.logMessage = msg;
+        //
+        logLabel.setText("<html>"+logMessage+"</html>");
+        logPanel.revalidate();
+        logPanel.repaint();
+    }
+
+    public void initializeButtons(){
+        for(int i=10; i>=0; i--){
+            int floorNumber = i;
+            JButton button = new JButton(Integer.toString(i));
+            Floor floor = wagonik.floors.stream()
+                    .filter(f-> f.floorNum == floorNumber)
+                    .findFirst()
+                    .orElseThrow();
+
+            button.addActionListener(e-> {
+//                wagonik.waitUntil = System.currentTimeMillis() + 3000;
+                wagonik.goTo(floor);
+            });
+            container.add(button);
+        }
     }
 
     public void setActive(boolean value){

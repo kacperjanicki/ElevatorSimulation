@@ -13,12 +13,13 @@ class Wagonik extends JPanel {
     static protected Direction direction;
     private final int elevCapacity = 5;
     Timer timer;
+    // w ActionListenerze(lambdzie) nie mozna zmieniac wartosci inta,
+    // wiec dajemy int[]
     int[] previousFloor = {-1};
-    private long waitUntil = -1;
+    protected long waitUntil = -1;
 
     TreeSet<Floor> taskSet = new TreeSet<>(Comparator.comparingInt(f -> f.floorNum));
     public ElevButtons buttons;
-    private Integer targetY;
 
     public Wagonik(ArrayList<Floor> floors, ArrayList<Summoner> summoners,ElevButtons buttons){
         this.shouldStop = false;
@@ -44,10 +45,13 @@ class Wagonik extends JPanel {
                 } else {
                     waitUntil = -1;
                     setShouldStop(false);
-
                     Floor next = getNextTask();
+//                    buttons.setLogMessage("Request: "+next.floorNum + " pietro");
                     if (next != null) {
-                        Direction newDir = next.floorNum > currentFloor.floorNum ? Direction.UP : Direction.DOWN;
+                        Direction newDir;
+                        if(next.floorNum > currentFloor.floorNum) newDir = Direction.UP;
+                        else if(next.floorNum == currentFloor.floorNum) newDir = Direction.IDLE; // jezeli bedac na 0 wezwie na 0
+                        else newDir = Direction.DOWN;
                         setDirection(newDir);
                     } else {
                         setDirection(Direction.IDLE);
@@ -56,22 +60,18 @@ class Wagonik extends JPanel {
                     }
                 }
             }
-            summoners.forEach(Summoner::updateDirectionIndicator);
 
+            summoners.forEach(Summoner::updateDirectionIndicator);
             Point p = this.getLocation();
             Floor newFloor = getCurrentFloor(p.y);
             this.currentFloor = newFloor;
-
-//            System.out.println("current floor: "+currentFloor.floorNum+" passCount "+currentFloor.passengers.size());
             if(newFloor.floorNum != previousFloor[0] && currentFloor == getNextTask()) stop();
 
             if(shouldStop){
                 setDirection(Direction.IDLE);
                 return;
             }
-//            System.out.println("pietro: "+currentFloor.floorNum + "y: "+this.getLocation().y);
-            if(!SimulationManager.simulationRunning) return;
-
+            if(!SimulationManager.simulationRunning) return; // debug
             if (p.y >= 0) {
                 int step = direction.getValue();
                 int nextY = p.y + step;
@@ -95,7 +95,6 @@ class Wagonik extends JPanel {
 
         });
     }
-
     @Override
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
@@ -124,10 +123,11 @@ class Wagonik extends JPanel {
 
     protected void enterPassengers(){
         final Floor aktualneFloor = this.currentFloor;
-        System.out.println("curr "+aktualneFloor.floorNum);
-
+        if(!currentFloor.hasAwaitingPassengers()) return;
 
         Iterator<Passenger> it = aktualneFloor.passengers.iterator();
+        // kazda animacja wejscia do windy niech trwa 0,5s zeby bylo plynnie
+
         Timer timer = new Timer(500,null);
         timer.addActionListener(evt -> {
             if (it.hasNext() && currentPassengers.size() < elevCapacity) {
@@ -137,18 +137,18 @@ class Wagonik extends JPanel {
                 pas.passengerPanel.repaint();
 
                 this.add(pas.icon);
+                buttons.setLogMessage(pas+"<br>entered the elevator");
                 currentPassengers.add(pas);
                 it.remove();
 
-                pas.addRemoveListener(this);
+                if(!aktualneFloor.hasAwaitingPassengers()) aktualneFloor.summoner.setVisible(false);
+                if(currentPassengers.size() == elevCapacity) buttons.setLogMessage("Maximum capacity: 5<br>Wyjdz ktoryms z pasażerów<br> żeby zwolnić miejsce");
 
+
+                pas.addRemoveListener(this);
                 this.revalidate();
                 this.repaint();
-            }else if(currentPassengers.size() == elevCapacity){
-//                System.out.println("capacity reached");
-                return;
             }
-
             else {
                 ((Timer) evt.getSource()).stop();
             }
@@ -157,24 +157,27 @@ class Wagonik extends JPanel {
     }
 
     protected void updateButtonsState() {
+        boolean isWaiting = (waitUntil > System.currentTimeMillis());
         boolean shouldBeActive = SimulationManager.simulationRunning
-                && direction == Direction.IDLE;
+                && (direction == Direction.IDLE || isWaiting);
         buttons.setActive(shouldBeActive);
     }
-
 
     protected void goTo(Floor floor){
         if (!taskSet.contains(floor)) {
             taskSet.add(floor);
         }
-        targetY = floor.getLocation().y;
         // jesli winda stoi to ruszmay ja
         if (direction == Direction.IDLE) {
             Floor next = getNextTask();
             if (next != null) {
-                Direction newDir = next.floorNum > currentFloor.floorNum ? Direction.UP : Direction.DOWN;
+                Direction newDir;
+                if(next.floorNum > currentFloor.floorNum) newDir = Direction.UP;
+                else if(next.floorNum == currentFloor.floorNum) newDir = Direction.IDLE; // jezeli bedac na 0 wezwie na 0
+                else newDir = Direction.DOWN;
                 setDirection(newDir);
                 move();
+                buttons.setLogMessage("Winda jedzie na "+next.floorNum + " pietro");
             }
         }
 
@@ -188,31 +191,25 @@ class Wagonik extends JPanel {
                 .orElse(null);
     }
 
-
     protected void stop(){
         previousFloor[0] = currentFloor.floorNum;
         timer.stop();
-        System.out.println("current passengers: "+currentPassengers.size());
-        if(currentFloor.hasAwaitingPassengers()){
-            this.enterPassengers();
-        }
-//      log.addMessage("Elevator capacity reached. Maximum passengers at the time is 5")
-
-        taskSet.remove(currentFloor);
 
         setShouldStop(false);
         setDirection(Direction.IDLE);
-        updateButtonsState();
+        summoners.forEach(Summoner::updateDirectionIndicator);
 
-        waitUntil = System.currentTimeMillis() + 3000;
+        this.enterPassengers();
+        taskSet.remove(currentFloor);
+
+
+        waitUntil = System.currentTimeMillis() + 5000;
         if(!timer.isRunning()) timer.start(); // wznawiamy glowny timer;
-
       }
 
     public void move(){
-        System.out.println(taskSet);
-        // w ActionListenerze(lambdzie) nie mozna zmieniac wartosci inta,
-        // wiec dajemy int[]
+//        System.out.println(taskSet);
+
         if(!timer.isRunning()){
             timer.start();
         }

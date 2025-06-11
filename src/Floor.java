@@ -96,16 +96,16 @@ class Passenger{
             public void mouseClicked(MouseEvent e) {
                 if(SimulationManager.simulationRunning && Wagonik.direction == Direction.IDLE){
                     removeOnClick(container);
-
                 }
             }
         });
     }
 
     void removeOnClick(Wagonik wagon){
+        SimulationManager.elevatorButtons.setLogMessage(this+"<br>left the elevator");
         wagon.remove(icon);
+        wagon.currentPassengers.remove(this);
         wagon.revalidate();
         wagon.repaint();
-        SimulationManager.elevatorButtons.setLogMessage(this+"<br>left the elevator");
     }
 }

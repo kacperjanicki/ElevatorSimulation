@@ -1,15 +1,17 @@
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
 public class SimulationManager {
-    private Elevator elevatorController;
+    static private Elevator elevatorController;
     static ElevButtons elevatorButtons;
+    static JButton startButton;
 //    private Summoner summoner;
     static protected boolean simulationRunning = false;
 
-    public SimulationManager(Elevator elevator){
-        this.elevatorController = elevator;
-//        this.summoner = summoner;
+    public SimulationManager(Elevator elevator,JButton start){
+        elevatorController = elevator;
+        startButton = start;
     }
 
     public void startSimulation(){
@@ -24,16 +26,23 @@ public class SimulationManager {
 //          Pokazujemy Summonera, jeżeli piętro ma oczekujących pasażerów
             if(f.hasAwaitingPassengers()) f.summoner.setVisible(true);
         }
-        elevatorController.wagonik.setShouldStop(false);
-        elevatorController.start();
-        elevatorController.wagonik.updateButtonsState();
+
+        Wagonik wagonik = elevatorController.wagonik;
+        wagonik.setShouldStop(false);
+        wagonik.setDirection(Direction.IDLE);
+        wagonik.taskSet.clear();
+        wagonik.currentPassengers.clear();
+        wagonik.updateButtonsState();
+        wagonik.shouldEndDetectedAt = -1;
     }
     // debug - delete later
-    public void stopSimulation(){
+    static public void stopSimulation(){
         simulationRunning=false;
+        elevatorButtons.setLogMessage("Simulation ended");
         elevatorController.wagonik.setShouldStop(true);
         elevatorController.wagonik.setDirection(Direction.IDLE);
         elevatorController.wagonik.updateButtonsState();
+        startButton.setEnabled(true);
     }
 
     static public ArrayList<Passenger> populatePassengersOnFloor(Floor currentFloor){
@@ -43,5 +52,5 @@ public class SimulationManager {
             result.add(new Passenger(currentFloor));
         }
         return result;
-    };
+    }
 }

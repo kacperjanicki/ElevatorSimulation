@@ -7,7 +7,6 @@ import java.awt.*;
 public class myFrame extends JFrame {
     private SimulationManager manager;
     private Elevator elevator;
-    private Summoner summoner;
     private ElevButtons elevButtons;
     protected JPanel rightPanel;
 
@@ -26,7 +25,6 @@ public class myFrame extends JFrame {
 
         elevButtons = new ElevButtons();
         elevator = new Elevator(rightPanel,elevButtons);
-        manager = new SimulationManager(elevator);
 
         JPanel mainPanel = new JPanel(new BorderLayout(10,0));
         mainPanel.setPreferredSize(new Dimension(900,800));
@@ -40,22 +38,15 @@ public class myFrame extends JFrame {
         JButton start = new JButton("START");
         start.addActionListener(e -> {
             manager.startSimulation();
+            start.setEnabled(false);
             elevator.floorSummoners.forEach(Summoner::updateDirectionIndicator);
         });
-
-        // for debugging
-        JButton stop = new JButton("stop");
-        stop.addActionListener(e -> {
-            manager.stopSimulation();
-            elevator.wagonik.direction = Direction.IDLE;
-            elevator.floorSummoners.forEach(Summoner::updateDirectionIndicator);
-        });
+        manager = new SimulationManager(elevator,start);
 
         mainPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1), new EmptyBorder(10, 10, 20, 10)));
         startPanel.setBorder(new CompoundBorder(new LineBorder(Color.BLACK, 1),new EmptyBorder(20, 10, 10, 10)));
 
         startPanel.add(start);
-        startPanel.add(stop);
         leftPanel.add(elevButtons);
 
         mainPanel.add(leftPanel,BorderLayout.WEST);
@@ -71,7 +62,7 @@ public class myFrame extends JFrame {
         this.setVisible(true);
         this.setResizable(false);
 //      debug - wyswietlaj na drugim monitorze
-        this.setLocation(-1000,200);
+//        this.setLocation(-1000,200);
     }
 
 }

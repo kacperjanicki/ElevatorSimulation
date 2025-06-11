@@ -16,7 +16,8 @@ class Wagonik extends JPanel {
     // w ActionListenerze(lambdzie) nie mozna zmieniac wartosci inta,
     // wiec dajemy int[]
     int[] previousFloor = {-1};
-    protected long waitUntil = -1;
+    private long waitUntil = -1;
+    protected long shouldEndDetectedAt = -1;
 
     TreeSet<Floor> taskSet = new TreeSet<>(Comparator.comparingInt(f -> f.floorNum));
     public ElevButtons buttons;
@@ -46,7 +47,6 @@ class Wagonik extends JPanel {
                     waitUntil = -1;
                     setShouldStop(false);
                     Floor next = getNextTask();
-//                    buttons.setLogMessage("Request: "+next.floorNum + " pietro");
                     if (next != null) {
                         Direction newDir;
                         if(next.floorNum > currentFloor.floorNum) newDir = Direction.UP;
@@ -71,19 +71,30 @@ class Wagonik extends JPanel {
                 setDirection(Direction.IDLE);
                 return;
             }
-            if(!SimulationManager.simulationRunning) return; // debug
+
+
+            boolean shouldEnd = direction == Direction.IDLE && currentPassengers.isEmpty() && taskSet.isEmpty();
+
+            if (shouldEnd) {
+                if (shouldEndDetectedAt == -1) {
+                    shouldEndDetectedAt = System.currentTimeMillis();
+                } else if (System.currentTimeMillis() - shouldEndDetectedAt >= 5000) {
+                    SimulationManager.stopSimulation();
+                }
+            } else {
+                shouldEndDetectedAt = -1; // warunki niespelnione - timer zerowany
+            }
+
+
             if (p.y >= 0) {
                 int step = direction.getValue();
                 int nextY = p.y + step;
-
                 // Sprawdzamy, czy następna pozycja Y to piętro
                 Optional<Floor> floorAtNextY = floors.stream()
                         .filter(f -> f.getY() == nextY)
                         .findFirst();
-
                 this.setLocation(p.x, nextY);
                 this.repaint();
-
                 // Jeżeli piętro istnieje, aktualizujemy currentFloor
                 floorAtNextY.ifPresent(f -> this.currentFloor = f);
 
@@ -144,7 +155,6 @@ class Wagonik extends JPanel {
                 if(!aktualneFloor.hasAwaitingPassengers()) aktualneFloor.summoner.setVisible(false);
                 if(currentPassengers.size() == elevCapacity) buttons.setLogMessage("Maximum capacity: 5<br>Wyjdz ktoryms z pasażerów<br> żeby zwolnić miejsce");
 
-
                 pas.addRemoveListener(this);
                 this.revalidate();
                 this.repaint();
@@ -166,6 +176,7 @@ class Wagonik extends JPanel {
     protected void goTo(Floor floor){
         if (!taskSet.contains(floor)) {
             taskSet.add(floor);
+            buttons.updateQueuePanel(taskSet);
         }
         // jesli winda stoi to ruszmay ja
         if (direction == Direction.IDLE) {
@@ -201,15 +212,13 @@ class Wagonik extends JPanel {
 
         this.enterPassengers();
         taskSet.remove(currentFloor);
-
+        buttons.updateQueuePanel(taskSet);
 
         waitUntil = System.currentTimeMillis() + 5000;
         if(!timer.isRunning()) timer.start(); // wznawiamy glowny timer;
       }
 
     public void move(){
-//        System.out.println(taskSet);
-
         if(!timer.isRunning()){
             timer.start();
         }

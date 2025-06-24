@@ -208,6 +208,7 @@ class Wagonik extends JPanel {
 
         setShouldStop(false);
         setDirection(Direction.IDLE);
+        updateButtonsState();
         summoners.forEach(Summoner::updateDirectionIndicator);
 
         this.enterPassengers();
